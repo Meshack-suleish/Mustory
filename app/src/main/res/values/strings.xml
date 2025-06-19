@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">Mustory</string>
+    <string name="action_settings">Settings</string>
+    <string name="first_fragment_label">First Fragment</string>
+    <string name="second_fragment_label">Second Fragment</string>
+    <string name="next">Next</string>
+    <string name="previous">Previous</string>
+    <string name="open_navigation">open navigation</string>
+    <string name="close_navigation">close navigation</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="add_music">Add music</string>
+
+</resources>

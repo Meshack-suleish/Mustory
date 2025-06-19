@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:showIn="navigation_view">
+
+    <!-- Main Navigation Items -->
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_home"
+            android:icon="@drawable/baseline_home_24"
+            android:title="Home" />
+
+        <item
+            android:id="@+id/nav_playlist"
+            android:icon="@drawable/baseline_music_note_24"
+            android:title="Login" />
+    </group>
+
+    <!-- Separator (optional, for visual distinction) -->
+    <item android:title="">
+        <menu>
+            <!-- You can add more secondary items here if needed -->
+        </menu>
+    </item>
+
+
+</menu>
