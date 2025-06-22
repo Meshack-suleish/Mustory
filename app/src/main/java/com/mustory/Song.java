@@ -3,12 +3,21 @@ package com.mustory;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.google.gson.annotations.SerializedName;
+
 public class Song implements Parcelable {
+    // If your JSON keys are different, annotate as needed
+    // For example: @SerializedName("track_name") private String name;
+
     private String name;
     private String description;
     private String artist;
     private String path;
     private int number;
+
+    // Required by Gson
+    public Song() {
+    }
 
     public Song(String name, String description, String artist, String path, int number) {
         this.name = name;
@@ -38,6 +47,7 @@ public class Song implements Parcelable {
         }
     };
 
+    // Getters
     public String getName() {
         return name;
     }
@@ -58,6 +68,7 @@ public class Song implements Parcelable {
         return number;
     }
 
+    // Parcelable methods
     @Override
     public int describeContents() {
         return 0;

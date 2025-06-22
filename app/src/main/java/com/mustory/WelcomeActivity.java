@@ -44,28 +44,27 @@ public class WelcomeActivity extends AppCompatActivity implements NavigationView
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.fragment_container, new HomeFragment())
                     .commit();
-            navigationView.setCheckedItem(R.id.nav_home);
         }
 
     }
 
 
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-        int id = item.getItemId();
-
-        if (id == R.id.nav_home) {
-            getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.fragment_container, new HomeFragment())
-                    .commit();
-        } else if (id == R.id.nav_playlist) {
-            getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.fragment_container,new LoginFragment())
-                    .commit();
-        }  else {
-            return false;
-
-        }
-        drawerLayout.closeDrawer(GravityCompat.START);
+//        int id = item.getItemId();
+//
+//        if (id == R.id.nav_home) {
+//            getSupportFragmentManager().beginTransaction()
+//                    .replace(R.id.fragment_container, new HomeFragment())
+//                    .commit();
+//        } else if (id == R.id.nav_playlist) {
+//            getSupportFragmentManager().beginTransaction()
+//                    .replace(R.id.fragment_container,new H())
+//                    .commit();
+//        }  else {
+//            return false;
+//
+//        }
+//        drawerLayout.closeDrawer(GravityCompat.START);
         return true;
     }
 

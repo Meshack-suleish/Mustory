@@ -2,10 +2,9 @@ package com.mustory;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
-import android.widget.ListView;
+import android.util.Log;
+import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
@@ -20,15 +19,17 @@ import com.google.android.material.floatingactionbutton.ExtendedFloatingActionBu
 import java.util.ArrayList;
 import java.util.List;
 
+import retrofit2.*;
+import retrofit2.converter.gson.GsonConverterFactory;
+
 public class MainActivity extends AppCompatActivity {
 
-    private RecyclerView listView;
+    private RecyclerView recyclerView;
     private ProgressBar progressBar;
-
-    private ArrayList<Song> songs;
     private MusicAdapter adapter;
-    private ExtendedFloatingActionButton listenOnlineFab;
+    private ArrayList<Song> songs = new ArrayList<>();
 
+    private SongApi api;
 
     @SuppressLint("MissingInflatedId")
     @Override
@@ -36,29 +37,36 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        RecyclerView recyclerView = findViewById(R.id.playlist_recycler_view);
-        listenOnlineFab = findViewById(R.id.listen_online_fab);
+        recyclerView  = findViewById(R.id.playlist_recycler_view);
+        progressBar   = findViewById(R.id.progressBar);
+        ExtendedFloatingActionButton listenOnlineFab = findViewById(R.id.listen_online_fab);
 
-        songs = new ArrayList<>();
-        populateSongs();
-
-        adapter = new MusicAdapter(this, songs, position -> {
-            Intent intent = new Intent(MainActivity.this, PlayerActivity.class);
-            intent.putParcelableArrayListExtra("songs", new ArrayList<>(songs));
-            intent.putExtra("position", position);
-            startActivity(intent);
-        });
-
-        recyclerView.setAdapter(adapter);
+    // 1. local list first
+    populateLocalSongs();
+    adapter = new MusicAdapter(this, songs, position -> {
+        Intent intent = new Intent(MainActivity.this, PlayerActivity.class);
+        intent.putParcelableArrayListExtra("songs", new ArrayList<>(songs));
+        intent.putExtra("position", position);
+        startActivity(intent);
+    });
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-
-        listenOnlineFab.setOnClickListener(v -> {
-            showListenOnlineDialog();
-        });
-    }
+        recyclerView.setAdapter(adapter);
 
 
-    private void populateSongs() {
+    // 2. Retrofit init (point to your ngrok or LAN base URL)
+    Retrofit retrofit = new Retrofit.Builder()
+            .baseUrl("https://mustory.infinityfreeapp.com/Mustory/")
+            .addConverterFactory(GsonConverterFactory.create())
+            .build();
+    api = retrofit.create(SongApi.class);
+
+    // 3. FAB: ask user → fetch remote songs
+        listenOnlineFab.setOnClickListener(v -> showListenOnlineDialog());
+}
+
+
+    private void populateLocalSongs() {
+        songs.clear();
         String path = "android.resource://" + getPackageName() + "/" + R.raw.pillars_of_faith_jua_litue;
         String path1 = "android.resource://" + getPackageName() + "/" + R.raw.u_mwendo_gani_nyumbani;
         String path2 = "android.resource://" + getPackageName() + "/" + R.raw.yesu_kwetu_ni_rafiki;
@@ -170,26 +178,38 @@ public class MainActivity extends AppCompatActivity {
         ));
     }
 
+    private void fetchOnlineSongs() {
+        progressBar.setVisibility(View.VISIBLE);
+        api.getAllSongs().enqueue(new Callback<List<Song>>() {
+            @Override public void onResponse(Call<List<Song>> c, Response<List<Song>> r) {
+                progressBar.setVisibility(View.GONE);
+                if (r.isSuccessful() && r.body() != null) {
+                    songs.clear();
+                    songs.addAll(r.body());   // replace with remote list
+                    adapter.notifyDataSetChanged();
+                    Toast.makeText(MainActivity.this, "Online list loaded", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(MainActivity.this, "Server error", Toast.LENGTH_SHORT).show();
+                    Log.e("MainActivity", "Response code " + r.code());
+                }
+            }
+            @Override public void onFailure(Call<List<Song>> c, Throwable t) {
+                progressBar.setVisibility(View.GONE);
+                Toast.makeText(MainActivity.this, "Network error: " + t.getMessage(), Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
 
 
     private void showListenOnlineDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-
-        builder.setTitle("Get more online");
-        builder.setMessage("This is a Beta Version, please rate this app to support the developer +255 742 291 391");
-
-        builder.setPositiveButton("OK", (dialog, which) -> {
-            Toast.makeText(MainActivity.this, "Stay turned soon to come!...", Toast.LENGTH_SHORT).show();
-            dialog.dismiss();
-        });
-
-        builder.setNegativeButton("No", (dialog, which) -> {
-            Toast.makeText(MainActivity.this, "Cancelled.", Toast.LENGTH_SHORT).show();
-            dialog.dismiss();
-        });
-
-        builder.setCancelable(false);
-        AlertDialog dialog = builder.create();
-        dialog.show();
+        new AlertDialog.Builder(this)
+                .setTitle("Stream from server?")
+                .setMessage("Do you want to load the latest songs from online?")
+                .setPositiveButton("Yes", (d, w) -> fetchOnlineSongs())
+                .setNegativeButton("Cancel", (d, w) -> d.dismiss())
+                .show();
     }
+
+
 }
